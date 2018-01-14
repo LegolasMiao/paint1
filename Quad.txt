@@ -1,0 +1,179 @@
+#include "stdio.h"
+#include "stdlib.h"
+#include "string.h"
+#include <tchar.h>
+#include <math.h>
+
+#define matrixOrder 8 
+
+typedef struct node
+{
+	int data;  /*数值*/
+	char *quadNode;  /*编码*/
+
+}quadTreeNode;
+
+bool getQuanternaryCode(quadTreeNode **quadMatrix, int level) 
+{
+	int space = matrixOrder;
+
+	for (int n = 0; n < level; n++)
+	{
+		for (int i = 0; i < matrixOrder; i = i + space)
+		{
+			for (int j = 0; j < matrixOrder; j = j + space)
+			{
+				//0号区域
+				for (int row = i; row<i + space / 2; row++)
+				{
+					for (int col = j; col< j + space / 2; col++)
+					{
+						quadMatrix[row][col].quadNode[n] = '0';
+					}
+				}
+				//1号区域
+				for (int row = i; row<i + space / 2; row++)
+				{
+					for (int col = j + space / 2; col< j + space; col++)
+					{
+						quadMatrix[row][col].quadNode[n] = '1'；
+					}
+				}
+				//2号区域
+				for (int row = i + space / 2; row<i + space; row++)
+				{
+					for (int col = j; col< j + space / 2; col++)
+					{
+						quadMatrix[row][col].quadNode[n] = '2';
+					}
+				}
+				//3号区域
+				for (int row = i + space / 2; row<i + space; row++)
+				{
+					for (int col = j + space / 2; col< j + space; col++)
+					{
+						quadMatrix[row][col].quadNode[n] = '3';
+					}
+				}
+			}
+		}
+		space /= 2;     
+	}
+	return true;
+
+}
+
+bool mergeQuadTreeCode(quadTreeNode **quadMatrix, int level)
+{
+	int space = 2;
+
+	for (int n = 0; n < level; n++)
+	{
+		for (int i = 0; i < matrixOrder; i = i + space)
+		{
+			for (int j = 0; j < matrixOrder; j = j + space)
+			{
+				int tempdata = quadMatrix[i][j].data;
+				int check = 0; 
+
+				for (int row = i; row < i + space; row++)
+				{
+					for (int col = j; col < j + space; col++)
+					{
+						if (quadMatrix[row][col].data != tempdata)
+						{
+							check = 1;
+						}
+					}
+				}
+				for (int row = i; row < i + space; row++)
+				{
+					for (int col = j; col < j + space; col++)
+					{
+						if (check == 0)
+						{
+							quadMatrix[row][col].quadNode[level - n - 1] = '\0';  
+						}
+					}
+				}
+			}
+		}
+		space *= 2;
+	}
+	return true;
+}
+
+bool Release(quadTreeNode **quadMatrix)
+{
+	for (int i = 0; i < 8; i++)
+	{
+		free(quadMatrix[i]);
+	}
+	return true;
+}
+
+bool initailize(quadTreeNode **quadMatrix, int(*temp)[matrixOrder], int level)
+{
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			quadMatrix[i][j].data = temp[i][j]; 
+			quadMatrix[i][j].quadNode = (char *)malloc(sizeof(char)*(level + 1));
+			quadMatrix[i][j].quadNode[level] = '\0';
+		}
+	}
+	return true;
+}
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+
+
+	int quadTreeLevel = 0, countlevel = matrixOrder;
+
+	int matrix[8][8] = {
+		1, 1, 1, 1, 2, 2, 3, 3,
+		1, 1, 1, 1, 2, 2, 3, 3,
+		1, 1, 1, 1, 4, 4, 5, 5,
+		1, 1, 1, 1, 4, 4, 5, 5,
+		6, 6, 7, 8, 13, 13, 14, 14,
+		6, 6, 9, 10, 13, 13, 14, 14,
+		11, 11, 12, 12, 15, 16, 19, 19,
+		11, 11, 12, 12, 17, 18, 19, 19
+	};
+
+	quadTreeNode **quadTreeMatrix = (quadTreeNode**)malloc(sizeof(quadTreeNode*)*matrixOrder);
+
+	for (int i = 0; i <matrixOrder; i++)
+	{
+		quadTreeMatrix[i] = (quadTreeNode*)malloc(sizeof(quadTreeNode)*matrixOrder);
+	}
+
+	while (countlevel != 1)
+	{
+		countlevel /= 2;
+		quadTreeLevel++;
+	}
+	initailize(quadTreeMatrix, matrix, quadTreeLevel);
+	getQuanternaryCode(quadTreeMatrix, quadTreeLevel);
+	mergeQuadTreeCode(quadTreeMatrix, quadTreeLevel);
+
+	printf("输出四进制编码：\n");
+
+	for (int row = 0; row < matrixOrder; row++)
+	{
+		for (int col = 0; col < matrixOrder; col++)
+		{
+			for (int m = 0; m <= quadTreeLevel - 1; m++)
+			{
+				printf("%c", quadTreeMatrix[row][col].quadNode[m]);
+			}
+		}
+		printf(" ");
+		printf("\n");
+	}
+	Release(quadTreeMatrix);
+	getchar();
+	return 0;
+}

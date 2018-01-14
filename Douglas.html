@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>"Map"</title>
+        <meta charset="UTF-8">
+        <script type="text/javascript"></script>
+    
+    
+    <body>
+        <div>
+            <div >
+            <p >选择打开的文件</p>
+            <input type="file" id="filepick">
+            <input type="button" value="显示地图" onclick="readfile()">
+            <input type="button" value="道格拉斯" onclick="DGLS()">
+            <input type="button" value="清空" onclick="clea()"> 
+
+            </div>
+            <div class="bg-right">
+                <canvas id="paint" width="1080px" height="720px"></canvas>
+        
+            </div>
+        </div>
+    
+    <script type="text/javascript">
+        function Point(x,y)
+        {
+            this.x=x;
+            this.y=y;
+        }
+
+        function clea()
+        {
+            var canvas=document.getElementById('paint');
+            var ctx=canvas.getContext('2d');
+            ctx.clearRect(0,0,1080,720);
+        }
+
+        function readfile()
+        {   
+            var inputfile = document.getElementById("filepick").files[0];
+            var reader = new FileReader();
+            reader.readAsText(inputfile);
+            reader.onload=function(e)
+            {   
+                var text=reader.result.split("\r\n");
+           
+                var string=new Array();
+                var N=0;
+                string[N]=new Array();
+        
+                var l=text.length;
+                var judge=0;
+                for(i=1;i<l-1;i++) 
+                {   
+                    
+                    if(text[i]!="END")
+                    {   
+                        if(text[i].length!=1&&text[i].length!=2&&text[i].length!=3)
+                        {
+                        var x;
+                        var y;
+                        x=text[i].split(",")[0];
+                        y=text[i].split(",")[1];
+                        string[N][judge]=new Point(x,y);
+                        judge=judge+1;
+                        }
+                    }
+                    else
+                    {
+                        judge=0;
+                        N=N+1;
+                        string[N]=new Array();
+                    }
+                }
+                var canvas = document.getElementById("paint");
+                var cxt = canvas.getContext("2d");
+                cxt.beginPath();
+                cxt.lineWidth = 2;
+                for(i=0;i<N+1;i++)
+                {
+                    for(j=0;j<string[i].length-1;j++)
+                    {
+                         
+                        cxt.moveTo((string[i][j].x-40)*10,(16-string[i][j].y+50)*10);
+                        cxt.lineTo((string[i][j+1].x-40)*10,(16-string[i][j+1].y+50)*10);
+                        
+                    }
+                }
+                cxt.stroke();
+                
+            }
+        
+        }
+
+        function DGLS()
+        {
+            var cxt=document.getElementById("paint").getContext("2d"); 
+            var inputfile = document.getElementById("filepick").files[0];
+            var reader = new FileReader();
+            reader.readAsText(inputfile);
+            reader.onload=function(e)
+            {   
+                var text=reader.result.split("\r\n");
+           
+                var string=new Array();
+                var e=0;
+                string[e]=new Array();
+        
+                var l=text.length;
+                var n=0;
+                 
+                var xpoints=new Array();
+                 var ypoints=new Array();
+                 xpoints[e]=new Array();
+                 ypoints[e]=new Array();
+                 for(i=1;i<l-1;i++) 
+                 {   
+                     
+                     if(text[i]!="END")
+                     {   
+                         if(text[i].length!=1&&text[i].length!=2&&text[i].length!=3)
+                         {
+                         var x;
+                         var y;
+                         x=text[i].split(",")[0];
+                         y=text[i].split(",")[1];
+ 
+                         xpoints[e][n]=x;
+                         ypoints[e][n]=y;
+                             
+                         string[e][n]=new Point(x,y);
+                         n++;
+                         }
+                     }
+                     else
+                     {
+                         n=0;
+                         e=e+1;
+                         string[e]=new Array();
+                         xpoints[e]=new Array();
+                         ypoints[e]=new Array();
+ 
+                     }
+                 }
+                
+                var xfirst=new Array();
+                var yfirst=new Array();
+
+                var xfinal=new Array();
+                var yfinal=new Array();
+
+                for(i=0;i<462;i++)
+                {
+                    for(j=0;j<string[i].length;j++)
+                    {
+                        xfirst[i]=xpoints[i][0];
+                        yfirst[i]=ypoints[i][0];
+                        xfinal[i]=xpoints[i][j-1];
+                        yfinal[i]=ypoints[i][j-1];
+                    }
+                }
+
+                var A=new Array();
+                var B=new Array();
+                var C=new Array();
+                var d=new Array();
+                var ee=0;
+                d[ee]=new Array();
+                var threshold=new Array();     
+
+
+                var canvas=document.getElementById('paint');
+                var ctx=canvas.getContext('2d');
+                cxt.beginPath();
+                cxt.strokeStyle = "purple"; 
+                cxt.lineWidth =2;
+
+                for(i=0;i<e+1;i++)
+                {
+                    for(j=0;j<string[i].length-1;j++)
+                    {
+                        cxt.moveTo((string[i][j].x)*10-400,((string[i][j].y))*10+660);
+                        cxt.lineTo((string[i][j+1].x)*10-400,((string[i][j+1].y))*10+660); 
+                    }
+                }
+              
+                for(i=0;i<462;i++)
+                {
+                    cxt.moveTo((xfirst[i]*10-400),-yfirst[i]*10+660);
+
+
+                    d[i]=new Array();   
+
+                    for(j=0;j<xpoints[i].length;j++)
+                    {
+                                                             
+                    A[i]=(yfirst[i]-yfinal[i])/(Math.sqrt(Math.pow(yfirst[i]-yfinal[i],2)+Math.pow(xfirst[i]-xfinal[i],2)));
+                    B[i]=(xfinal[i]-xfirst[i])/(Math.sqrt(Math.pow(yfirst[i]-yfinal[i],2)+Math.pow(xfirst[i]-xfinal[i],2)));
+                    C[i]=(xfirst[i]*yfinal[i]-xfinal[i]*yfirst[i])/(Math.sqrt(Math.pow(yfirst[i]-yfinal[i],2)+Math.pow(xfirst[i]-xfinal[i],2)));
+
+                   d[i][j]=(A[i]*xpoints[i][j]+B[i]*ypoints[i][j]+C[i]);
+                   threshold[i]=Math.max.apply(null, d[i])/3;
+
+                   if(d[i][j]<threshold[i])
+                        {
+                        cxt.lineTo((xpoints[i][j])*10-400,-ypoints[i][j]*10+660);
+                        cxt.moveTo((xpoints[i][j])*10-400,-ypoints[i][j]*10+660);
+                        }
+                    
+                   }
+
+            }       
+        }
+
+                cxt.stroke();
+    }
+</script>
+</head> 
+<body>
